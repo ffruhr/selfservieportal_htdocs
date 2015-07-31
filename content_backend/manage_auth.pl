@@ -3,7 +3,7 @@ use strict;
 
 use Digest::MD5 qw/md5_hex/;
 
-use vars qw ( $BASE $DBH %data %user_hash $cookie );
+use vars qw ( $BASE $DBH %data %user_hash $cookie %mail);
 
 sub auth_session_check
 {
@@ -103,7 +103,10 @@ sub register_ex
                             Data     => $mail_content
                         );
 
-                        $msg->send();
+                        $msg->send('smtp', $Conf::mail{'host'}, Timeout => 60, AuthUser => $Conf::mail{'user'}, AuthPass => $Conf::mail{'pwd'}) || die $!;
+
+
+                        $data{'status'} = "Wir haben dir eine eMail zur Account-Aktivierung an $params{'login_email'} geschickt";
                     }
                     else
                     {
