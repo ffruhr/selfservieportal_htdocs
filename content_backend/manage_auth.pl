@@ -1,0 +1,161 @@
+#!/usr/bin/perl
+use strict;
+
+use Digest::MD5 qw/md5_hex/;
+
+use vars qw ( $BASE $DBH %data %user_hash $cookie );
+
+sub auth_session_check
+{
+        my $stmnt = "DELETE FROM session WHERE ses_update < now() - interval 3 hour";
+        my $sth = $DBH->prepare($stmnt);
+        $sth->execute;
+
+        if(param('do') eq 'login_ex')
+        {
+                &login_ex();
+                exit;
+        }
+        else
+        {
+                my %user_data = &read_cookie();
+
+                if($user_data{'mit'} == 0)
+                {
+                        &html_parser('core', 'login.htm');
+                        exit;
+                }
+                else
+                {
+                        my $stmnt = "UPDATE session SET ses_update = now() WHERE ses = $user_data{'ses'}";
+                        my $sth = $DBH->prepare($stmnt);
+                        $sth->execute || die $DBH->errstr;
+                        $data{'user_name'} = "Willkommen $user_data{'usr_name'}";
+						$user_hash{'mit'} = $user_data{'mit'};
+                }
+        }
+}
+
+
+sub login
+{
+        &html_parser('core', 'login.htm');
+}
+
+
+sub login_ex
+{
+        my %parameter;
+        my $user = param('user');
+        my $pwd = param('pwd');
+
+        my $stmnt = "SELECT * FROM mitarbeiter WHERE mit_login = ? AND mit_level = 1";
+        my $sth = $DBH->prepare($stmnt);
+        my $rc = $sth->execute($user);
+
+        if($rc == 1)
+        {
+                while(my $ref = $sth->fetchrow_hashref())
+                {
+#                        $data{'user_name'} = "Willkommen $ref->{'mit_name'}";
+			
+			use Crypt::PBKDF2;
+			my $pbkdf2 = Crypt::PBKDF2->new(
+        			hash_class => 'HMACSHA2',
+			        hash_args => {
+		        	        sha_size => 512,
+			        },
+			        iterations => 1000,      
+			        output_len => 50,        
+			        salt_len => 8,           
+    			);
+
+			if($pbkdf2->validate($ref->{'mit_pw'}, $pwd))
+			{
+	                        &write_cookie($ref->{'mit'});
+			}
+			else
+			{
+				&html_parser('core', 'login.htm');
+		                exit;
+			} 
+                }
+                
+                require "$BASE/core/manage_start.pl"; &show_start();
+                exit;
+        }
+        else
+        {
+                &html_parser('core', 'login.htm');
+                exit;
+        }
+}
+
+
+sub write_cookie
+{
+        my $usr = shift;
+
+        my $cookie_ident = int(rand(900000)) + 100000;
+        my $cookie_content = "$usr" . 'A' . md5_hex($cookie_ident);
+
+
+        my $cgi = new CGI;
+        $cookie = $cgi->cookie(-name => 'bude_zeit', -value => $cookie_content, -expires => '+3d', -path => '/');
+        print $cgi->header(-cookie=>$cookie);
+
+        my $md5_ua = md5_hex($ENV{'HTTP_USER_AGENT'});
+
+        my $stmnt = "INSERT INTO session SET ses_mit = '$usr', ses_key = '$cookie_ident', ses_update = now(), ses_user_agent = '$md5_ua'";
+        my $sth = $DBH->prepare($stmnt);
+        $sth->execute || die $DBH->errstr;
+
+		$user_hash{'mit'} = $usr;
+}
+
+
+sub read_cookie
+{
+        my $cgi = new CGI;
+        my $cookie = $cgi->cookie(-name => 'bude_zeit');
+        my $usr;
+        if($cookie =~ /^(\d+?)A(.+?)$/)
+        {
+                $usr = $1;
+
+                my $stmnt = "SELECT * FROM session JOIN mitarbeiter ON ses_mit = mit WHERE ses_mit = $usr AND md5(ses_key) = '$2' AND mit_level = 1";
+                my $sth = $DBH->prepare($stmnt);
+                my $rc = $sth->execute;
+                my %ses_data;
+
+                while(my $ref = $sth->fetchrow_hashref()){%ses_data = %{$ref}}
+                if($ses_data{ses_user_agent} eq md5_hex($ENV{'HTTP_USER_AGENT'}))
+                {
+                        return %ses_data;
+                }
+                else
+                {
+                        $ses_data{'mit'} = 0;
+                        return %ses_data;
+                }
+        }
+}
+
+
+sub back_logout
+{
+        my %usr_data = &read_cookie;
+
+        my $stmnt = "DELETE FROM session WHERE ses = $usr_data{'ses'}";
+        my $sth = $DBH->prepare($stmnt);
+        $sth->execute || die $DBH->errstr;
+
+        my $cgi = new CGI;
+        $cookie = $cgi->cookie(-name => 'bude_zeit', -value => 'logout', -expires => '+1s', -path => '/');
+        print $cgi->header(-cookie=>$cookie);
+
+
+        &login;
+}
+
+1;
