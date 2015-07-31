@@ -61,7 +61,49 @@ sub register_ex
                 {
                     if($params{'pwd'} eq $params{'pwd_retype'})
                     {
-                        
+                        use MIME::Lite;
+                        use Crypt::PBKDF2;
+
+                        my $pbkdf2 = Crypt::PBKDF2->new(
+                            hash_class => 'HMACSHA2',
+                            hash_args => {
+                                    sha_size => 512,
+                            },
+                            iterations => 1000,      
+                            output_len => 50,        
+                            salt_len => 8,           
+                        );
+
+                        my $pwd = $pbkdf2->generate($params{'pwd'});
+
+
+                        my $insert_stmnt = "INSERT INTO mitarbeiter
+                                            SET
+                                                mit_login = ?,
+                                                mit_level = 1,
+                                                mit_pw = ?,
+                                                mit_mail = ?,
+                                                mit_active = 'N',
+                                                mit_activation = md5(CONCAT(NOW(),?))";
+                        my $insert_sth = $DBH->prepare($insert_stmnt);
+                        $insert_sth->execute($params{'user'}, $pwd, $params{'login_mail'}, $params{'user'}) || die DBI->errstr;
+
+                        my $select_stmnt = "SELECT mit_activation FROM mitarbeiter WHERE mit_login = ?";
+                        my $select_sth = $DBH->prepare($select_stmnt);
+                        $select_sth->execute($params{'user'}) || die DBI->errstr;
+
+                        my $activation_hash = $select_sth->fetchrow_hashref()->{'mit_activation'};
+
+                        my $mail_content = "Um deinen Account zu aktivieren folge bitte dem Link: http://ssp.freifunk.ruhr/?do=activation&activation=$activation_hash";
+
+                        my $msg = MIME::Lite->new(
+                            From     => 'ssp@freifunk.ruhr',
+                            To       => $params{'login_email'},
+                            Subject  => 'SelfServicePortal - Account - Activation',
+                            Data     => $mail_content
+                        );
+
+                        $msg->send();
                     }
                     else
                     {
@@ -141,7 +183,7 @@ sub login_ex
         my $user = param('user');
         my $pwd = param('pwd');
 
-        my $stmnt = "SELECT * FROM mitarbeiter WHERE mit_login = ? AND mit_level = 1";
+        my $stmnt = "SELECT * FROM mitarbeiter WHERE mit_login = ? && mit_level = 1 && mit_active = 'Y'";
         my $sth = $DBH->prepare($stmnt);
         my $rc = $sth->execute($user);
 
