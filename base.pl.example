@@ -1,0 +1,2 @@
+$BASE = "/home/selfserviceportal/content_backend";
+$HT_DOCS = "/var/www/selfserviceportal";
