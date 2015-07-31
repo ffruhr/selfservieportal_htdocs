@@ -13,8 +13,18 @@ sub auth_session_check
 
         if(param('do') eq 'login_ex')
         {
-                &login_ex();
-                exit;
+            &login_ex();
+            exit;
+        }
+        elsif(param('do') eq 'register')
+        {
+            &register();
+            exit;
+        }
+        elsif(param('do') eq 'register_ex')
+        {
+            &register_ex();
+            exit;
         }
         else
         {
@@ -36,6 +46,88 @@ sub auth_session_check
         }
 }
 
+sub register_ex
+{
+    my %params;
+    for(param()) { $params{$_} = param($_); }
+
+    if(&check_mail($params{'login_email'}))
+    {
+        if($params{'user'} ne '')
+        {
+            if(&check_username($params{'user'}))
+            {
+                if($params{'pwd'} ne '')
+                {
+                    if($params{'pwd'} eq $params{'pwd_retype'})
+                    {
+                        
+                    }
+                    else
+                    {
+                        $data{'status'} = "Passw&ouml;rter stimmen nicht &uuml;berein";
+                    }
+                }
+                else
+                {
+                    $data{'status'} = "Passwort darf nicht leer sein";
+                }
+            }
+            else
+            {
+                $data{'status'} = "Username schon vorhanden";
+            }
+        }
+        else
+        {
+            $data{'status'} = "Username darf nicht leer sein";
+        }
+    }
+    else 
+    {
+        $data{'status'} = "Email - Format ung&uuml;ltig";
+    }
+    
+    &html_parser('core', 'register_ex.htm');
+}
+
+sub check_username
+{
+    my($username)= @_;
+
+    my $stmnt = "SELECT mit FROM mitarbeiter WHERE mit_login = ?";
+    my $sth = $DBH->prepare($stmnt);
+    my $rc = $sth->execute($username) || &abort(DBI->errstr);
+
+    if($rc > 0)
+    {
+        return 0;
+    }
+    else
+    {
+        return 1;
+    }
+}
+
+sub check_mail
+{
+    my($mail) = @_;
+    use Email::Valid;
+
+    if(Email::Valid->address($mail))
+    {
+        return 1;
+    }
+    else
+    {
+        return 0;
+    }
+}
+
+sub register
+{
+    &html_parser('core', 'register.htm');
+}
 
 sub login
 {
