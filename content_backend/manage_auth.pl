@@ -26,6 +26,11 @@ sub auth_session_check
             &register_ex();
             exit;
         }
+        elsif(param('do') eq 'activate')
+        {
+            &activate_user();
+            exit;
+        }
         else
         {
                 my %user_data = &read_cookie();
@@ -44,6 +49,25 @@ sub auth_session_check
 						$user_hash{'mit'} = $user_data{'mit'};
                 }
         }
+}
+
+sub activate_user
+{
+    my $activation_hash = param('activation');
+
+    my $update_stmnt = "UPDATE mitarbeiter SET mit_active = 'Y' WHERE mit_activation = ?";
+    my $update_sth = $DBH->prepare($update_stmnt);
+    my $rc = $update_sth->execute($activation_hash) || die DBI->errstr;
+
+    if($rc == 1)
+    {
+        $data{'status'} = "Aktivierung erfolgreich";
+    }
+    else
+    {
+        $data{'status'} = "Es ist ein Fehler aufgetreten.";
+    }
+    &html_parser('core', 'activation_success.htm');
 }
 
 sub register_ex
