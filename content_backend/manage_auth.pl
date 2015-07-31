@@ -121,7 +121,7 @@ sub register_ex
                         my $mail_content = "Um deinen Account zu aktivieren folge bitte dem Link: http://ssp.freifunk.ruhr/?do=activation&activation=$activation_hash";
 
                         my $msg = MIME::Lite->new(
-                            From     => 'ssp@freifunk.ruhr',
+                            From     => 'ssp@freifunk-ruhrgebiet.de',
                             To       => $params{'login_email'},
                             Subject  => 'SelfServicePortal - Account - Activation',
                             Data     => $mail_content
