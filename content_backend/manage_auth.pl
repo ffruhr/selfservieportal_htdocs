@@ -26,7 +26,7 @@ sub auth_session_check
             &register_ex();
             exit;
         }
-        elsif(param('do') eq 'activate')
+        elsif(param('do') eq 'activation')
         {
             &activate_user();
             exit;
