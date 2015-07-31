@@ -112,6 +112,13 @@ sub register_ex
                         my $insert_sth = $DBH->prepare($insert_stmnt);
                         $insert_sth->execute($params{'user'}, $pwd, $params{'login_mail'}, $params{'user'}) || die DBI->errstr;
 
+                        my $id = $insert_sth->{mysql_insertid};
+
+                        my $insert_group_stmnt = "INSERT INTO mitarbeiter_group VALUES($id,1)";
+                        my $insert_group_sth = $DBH->prepare($insert_group_stmnt);
+                        $insert_group_sth->execute() || die DBI->errstr;
+
+
                         my $select_stmnt = "SELECT mit_activation FROM mitarbeiter WHERE mit_login = ?";
                         my $select_sth = $DBH->prepare($select_stmnt);
                         $select_sth->execute($params{'user'}) || die DBI->errstr;
