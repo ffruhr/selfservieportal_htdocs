@@ -80,10 +80,12 @@ sub dns_add_record
                 if($params{'ip4'} eq 'default')
                 {
                         $params{'ip4'} = get_new_ip4($params{'comm'});
+                        $return->{'ip4'} = $params{'ip4'};
                 }
                 if($params{'ip6'} eq 'default')
                 {
                         $params{'ip6'} = get_new_ip6($params{'comm'});
+                        $return->{'ip6'} = $params{'ip6'};
                 }
 
                 my @rr4 = ($params{'record'}.'.'.$params{'domain'},'A',$params{'ip4'}, 86400);
@@ -104,6 +106,9 @@ sub dns_add_record
                         $return->{'status'} = 1;
                         $return->{'msg'} = "Konnte Eintrag nicht anlegen<br>";
                 }
+
+                $return->{'record'} = $params{'record'};
+                $return->{'tld'} = $params{'domain'};
 
         }
         else
