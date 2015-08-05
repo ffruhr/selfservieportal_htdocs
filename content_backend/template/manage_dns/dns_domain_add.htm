@@ -125,20 +125,8 @@
 										success: function(data) {
 											alert(data);
 											if(data.status == 1) {
-												$('#dns_community_select').val('default');
-												$('#dns_domain').val('default');
-												$('#dns_tld_select').val('default');
-												$('#dns_ipv4_select').val('default');
-												$('#dns_ipv6_select').val('default');
-
 												$('#add_record_error').html(data.msg);
 											} else {
-												$('#dns_community_select').val('default');
-												$('#dns_domain').val('default');
-												$('#dns_tld_select').val('default');
-												$('#dns_ipv4_select').val('default');
-												$('#dns_ipv6_select').val('default');
-
 												$('#add_record_error').html('Deine Domain '+data.record+'.'+data.tld+' ist jetzt für '+data.ip4+' intern und '+data.ip6+' intern und extern zu erreichen');
 											}
 										}
