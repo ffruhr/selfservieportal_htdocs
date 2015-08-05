@@ -7,7 +7,7 @@ use CGI::Carp qw/fatalsToBrowser/;
 use Data::Printer;
 use JSON;
 
-use vars qw( $HT_DOCS $BASE $DBH $cookie %user_hash %pdns_conf %communities );
+use vars qw( $HT_DOCS $BASE $DBH $cookie %user_hash %communities );
 
 $SIG{'ALRM'} = \&abort;
 alarm(600);
