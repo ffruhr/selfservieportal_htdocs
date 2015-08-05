@@ -36,7 +36,7 @@ sub dns_domain_add
 
 sub dns_add_record
 {
-        my $Conf::pdns_conf = {  db_user                 =>      $Conf::pdns_conf{'db_user'},
+        my $pdns_conf = {  db_user                 =>      $Conf::pdns_conf{'db_user'},
                         db_pass                 =>      $Conf::pdns_conf{'db_pass'},
                         db_name                 =>      $Conf::pdns_conf{'db_name'},
                         db_port                 =>      $Conf::pdns_conf{'db_port'},
@@ -49,7 +49,7 @@ sub dns_add_record
                         lock_timeout            =>      $Conf::pdns_conf{'lock_timeout'}
         };
 
-        my $pdns = PowerDNS::Backend::MySQL->new($Conf::pdns_conf);
+        my $pdns = PowerDNS::Backend::MySQL->new($pdns_conf);
 
         my %params;
         for(param()) { $params{$_} = param($_); }
@@ -86,22 +86,6 @@ sub dns_add_record
                         $params{'ip6'} = get_new_ip6($params{'comm'});
                 }
 
-                my $Conf::pdns_conf = {  
-                        db_user                 =>      $Conf::pdns_conf{'db_user'},
-                        db_pass                 =>      $Conf::pdns_conf{'db_pass'},
-                        db_name                 =>      $Conf::pdns_conf{'db_name'},
-                        db_port                 =>      $Conf::pdns_conf{'db_port'},
-                        db_host                 =>      $Conf::pdns_conf{'db_host'},
-                        mysql_print_error       =>      $Conf::pdns_conf{'mysql_print_error'},
-                        mysql_warn              =>      $Conf::pdns_conf{'mysql_warn'},
-                        mysql_auto_commit       =>      $Conf::pdns_conf{'mysql_auto_commit'},
-                        mysql_auto_reconnect    =>      $Conf::pdns_conf{'mysql_auto_reconnect'},
-                        lock_name               =>      $Conf::pdns_conf{'lock_name'},
-                        lock_timeout            =>      $Conf::pdns_conf{'lock_timeout'}
-                };
-
-                my $pdns = PowerDNS::Backend::MySQL->new($Conf::pdns_conf);
-
                 my @rr4 = ($params{'record'}.'.'.$params{'domain'},'A',$params{'ip4'}, 86400);
                 my @rr6 = ($params{'record'}.'.'.$params{'domain'},'AAAA',$params{'ip6'}, 86400);
 
@@ -137,7 +121,7 @@ sub get_new_ip4
 {
         my($comm) = @_;
 
-        my $Conf::pdns_conf = {  db_user                 =>      $Conf::pdns_conf{'db_user'},
+        my $pdns_conf = {  db_user                 =>      $Conf::pdns_conf{'db_user'},
                         db_pass                 =>      $Conf::pdns_conf{'db_pass'},
                         db_name                 =>      $Conf::pdns_conf{'db_name'},
                         db_port                 =>      $Conf::pdns_conf{'db_port'},
@@ -150,7 +134,7 @@ sub get_new_ip4
                         lock_timeout            =>      $Conf::pdns_conf{'lock_timeout'}
         };
 
-        my $pdns = PowerDNS::Backend::MySQL->new($Conf::pdns_conf);
+        my $pdns = PowerDNS::Backend::MySQL->new($pdns_conf);
 
         for my $ip_range(@{$Community::communities{$comm}{'ip4_range'}})
         {
@@ -176,7 +160,7 @@ sub get_new_ip6
 {
         my($comm) = @_;
 
-        my $Conf::pdns_conf = {  db_user                 =>      $Conf::pdns_conf{'db_user'},
+        my $pdns_conf = {  db_user                 =>      $Conf::pdns_conf{'db_user'},
                         db_pass                 =>      $Conf::pdns_conf{'db_pass'},
                         db_name                 =>      $Conf::pdns_conf{'db_name'},
                         db_port                 =>      $Conf::pdns_conf{'db_port'},
@@ -189,7 +173,7 @@ sub get_new_ip6
                         lock_timeout            =>      $Conf::pdns_conf{'lock_timeout'}
         };
 
-        my $pdns = PowerDNS::Backend::MySQL->new($Conf::pdns_conf);
+        my $pdns = PowerDNS::Backend::MySQL->new($pdns_conf);
 
         for my $ip_range(@{$Community::communities{$comm}{'ip6_range'}})
         {
@@ -212,7 +196,7 @@ sub get_new_ip6
 
 sub dns_check_record
 {
-        my $Conf::pdns_conf = {  db_user                 =>      $Conf::pdns_conf{'db_user'},
+        my $pdns_conf = {  db_user                 =>      $Conf::pdns_conf{'db_user'},
                         db_pass                 =>      $Conf::pdns_conf{'db_pass'},
                         db_name                 =>      $Conf::pdns_conf{'db_name'},
                         db_port                 =>      $Conf::pdns_conf{'db_port'},
@@ -225,7 +209,7 @@ sub dns_check_record
                         lock_timeout            =>      $Conf::pdns_conf{'lock_timeout'}
         };
 
-        my $pdns = PowerDNS::Backend::MySQL->new($Conf::pdns_conf);
+        my $pdns = PowerDNS::Backend::MySQL->new($pdns_conf);
 
         my %params;
         for(param()) { $params{$_} = param($_) }
