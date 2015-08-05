@@ -5,8 +5,9 @@ use strict;
 use CGI qw(:standard);
 use CGI::Carp qw/fatalsToBrowser/;
 use Data::Printer;
+use JSON;
 
-use vars qw( $HT_DOCS $BASE $DBH $cookie %user_hash );
+use vars qw( $HT_DOCS $BASE $DBH $cookie %user_hash %pdns_conf %communities );
 
 $SIG{'ALRM'} = \&abort;
 alarm(600);
@@ -16,6 +17,7 @@ require "$BASE/manage.conf";
 require "$BASE/manage_html.pl";
 require "$BASE/manage_auth.pl";
 require "$BASE/manage_do.conf";
+require "$BASE/manage_communities.conf";
 
 # Datenbankverbindung aufbauen
 $DBH = DBI->connect($Conf::mysql_conf{'db_conf'}, $Conf::mysql_conf{'user'},$Conf::mysql_conf{'pwd'})  || die "cannot connect to database $!";
